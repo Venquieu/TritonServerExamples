@@ -11,8 +11,7 @@ sequence_id = 10086
 with httpclient.InferenceServerClient("Localhost:8000") as client:
     for idx, data in enumerate(real_input):
         input0_data = np.array([[data]], dtype=np.dtype(object))
-        #[['cc']] BYTES
-        # print(input0 data, np to triton dtype(input0 datadtype))
+
         inputs =[
             httpclient.InferInput("INPUT0", input0_data.shape, np_to_triton_dtype(input0_data.dtype))
         ]

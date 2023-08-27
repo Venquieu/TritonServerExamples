@@ -1,7 +1,8 @@
 import json
+from multiprocessing.pool import ThreadPool
+
 import numpy as np
 import triton_python_backend_utils as pb_utils
-from multiprocessing.pool import ThreadPool
 
 class Decoder(object):
     def __init__(self, blank):
@@ -90,6 +91,7 @@ class TritonPythonModel:
             #in 0 -> ctriton python backend utils.Tensor object
             # in0-> ndarray[ xxx']
             batch_input += in_0.as_numpy().tolist()
+
             in_start = pb_utils.get_input_tensor_by_name(request, "START")
             batch_start += in_start.as_numpy().tolist()
 
