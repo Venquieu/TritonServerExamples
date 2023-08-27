@@ -1,6 +1,6 @@
-name: "ctc decode modet"
+name: "ctc_decode_model"
 backend: "python"
-max batch size: 4
+max_batch_size: 4
 
 sequence batching {
     max_sequence_idle_microseconds: 5000000
@@ -22,7 +22,7 @@ sequence batching {
             name: "END"
             control：[
                 {
-                kind: CONTROL_SEOUENCE_ENO
+                kind: CONTROL_SEOUENCE_END
                 fp32_false_true:[0，1]
                 }
             ]
@@ -50,7 +50,7 @@ sequence batching {
 
 input [
     {
-        name: "INPUTO"
+        name: "INPUT0"
         data_type: TYPE_STRING
         dims: [l]
     }
@@ -64,4 +64,4 @@ output [
     }
 ]
 
-instance_group [{ kind: KIND_CPU } ]
+instance_group [ { kind: KIND_CPU } ]

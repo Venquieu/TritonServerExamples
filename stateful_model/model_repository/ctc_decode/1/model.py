@@ -47,17 +47,17 @@ class TritonPythonModel:
         model_config = json.loads(args["model_config"])
 
         # get max batch size
-        max_batch_size = max(model_config["max batch size"], 1)
+        max_batch_size = max(model_config["max_batch_size"], 1)
         # get blank symbol from config
-        blank = model_config.get("blank id",  "-")
+        blank = model_config.get("blank_id",  "-")
         # initialize decoders
-        self.decoders = [Decoder(blank) for i in range(max_batch_size)]
+        self.decoders = [Decoder(blank) for _ in range(max_batch_size)]
         # Get OUTPUT0 configuration
         output0_config = pb_utils.get_output_config_by_name(
             model_config, "0UTPUT0"
         )
         # Convert Triton types to numpy types
-        self.output0_dtype = pb_utils.triton_string_to_numpy(output0_config['data type'])
+        self.output0_dtype = pb_utils.triton_string_to_numpy(output0_config['data_type'])
         self.model_config = model_config
 
     def execute(self, requests):
@@ -120,12 +120,14 @@ class TritonPythonModel:
         
         return responses
 
-    def process_single_request(self,inp):
+    def process_single_request(self, inp):
         decoder_idx, input, ready, start = inp
         response = self.decoders[decoder_idx].decode(input[0], start[0], ready[0])
-        out_tensor_0 = pb_utils.Tensor("OUTPUT0", response.astype(self.output0_dtype))
-        inference_response = pb_ut1ls.InferenceResponse(
-            output_tensors=[out_tensor_0]
+        out_tensor_0 = pb_utils.Tensor(
+            "OUTPUT0", response.astype(self.output0_dtype)
+        )
+        inference_response = pb_utils.InferenceResponse(
+            output_tensors = [out_tensor_0]
         )
         return inference_response
 
