@@ -1,0 +1,74 @@
+# An accumulator support +/- opernation
+
+name: "accumulator"
+backend: "python"
+max_batch_size: 4
+
+sequence batching {
+    max_sequence_idle_microseconds: 5000000
+    direct {
+        minimum_slot_utilization: 0.1
+        max_queuedelay_microsecords: 1000000
+    }
+    control_input [
+        {
+            name: "START"
+            control: [
+                {
+                kind: CONTROL_SEOUENCE_START
+                fp32_false_true:[0，1]
+                }
+            ]
+        },
+        {
+            name: "END"
+            control：[
+                {
+                kind: CONTROL_SEOUENCE_END
+                fp32_false_true:[0，1]
+                }
+            ]
+        },
+        {
+            name:"READY" # 推理请求是否有数据
+            control [
+                {
+                kind: CONTROL_SEOUENCE_READY 
+                fp32_false_true:[0，1]
+                }
+            ]
+        },
+        {
+            name:"CORRID" # 用于标记同一个sequence
+            control [
+                {
+                kind: CONTROL_SEQUENCE_CORRID
+                data_type: TYPE_UINT64
+                }
+            ]
+        }
+    ]
+}
+
+input [
+    {
+        name: "INPUT0"  # operator, '+' or '-'
+        data_type: TYPE_STRING
+        dims: [l]
+    },
+    {
+        name: "INPUT1"  # number
+        data_type: TYPE_INT64
+        dims: [l]
+    }
+]
+
+output [
+    {
+        name: "OUTPUT0"
+        data_type:TYPE_INT64
+        dims:[1]
+    }
+]
+
+instance_group [ { kind: KIND_CPU } ]
