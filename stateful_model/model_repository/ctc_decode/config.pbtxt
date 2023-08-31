@@ -14,7 +14,7 @@ sequence batching {
             control: [
                 {
                 kind: CONTROL_SEOUENCE_START
-                fp32_false_true:[0，1]
+                fp32_false_true:[0, 1]
                 }
             ]
         },
@@ -23,7 +23,7 @@ sequence batching {
             control：[
                 {
                 kind: CONTROL_SEOUENCE_END
-                fp32_false_true:[0，1]
+                fp32_false_true:[0, 1]
                 }
             ]
         },
@@ -32,7 +32,7 @@ sequence batching {
             control [
                 {
                 kind: CONTROL_SEOUENCE_READY 
-                fp32_false_true:[0，1]
+                fp32_false_true:[0, 1]
                 }
             ]
         },
@@ -52,7 +52,7 @@ input [
     {
         name: "INPUT0"
         data_type: TYPE_STRING
-        dims: [l]
+        dims: [ 1 ]
     }
 ]
 
@@ -60,7 +60,7 @@ output [
     {
         name: "OUTPUT0"
         data_type:TYPE_STRING
-        dims:[1]
+        dims:[ 1 ]
     }
 ]
 
