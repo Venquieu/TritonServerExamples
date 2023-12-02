@@ -1,4 +1,4 @@
-name: "ctc_decode_model"
+name: "ctc_decode"
 backend: "python"
 max_batch_size: 4
 

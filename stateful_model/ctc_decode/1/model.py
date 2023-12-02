@@ -4,31 +4,34 @@ from multiprocessing.pool import ThreadPool
 import numpy as np
 import triton_python_backend_utils as pb_utils
 
+
 class Decoder(object):
     def __init__(self, blank):
         self.prev = ""
-        self.result =""
+        self.result = ""
         self.blank_symbol = blank
 
     def decode(self, input, start, ready):
         if start:
             self.prev = ""
             self.result = ""
-        
+
         if ready:
             for li in input.decode("utf-8"):
-                if li not in  [self.prev, self.blank_symbol]:
+                if li not in [self.prev, self.blank_symbol]:
                     self.result += li
-                
+
                 self.prev = li
-        
+
         r = np.array([[self.result]])
         return r
+
 
 class TritonPythonModel:
     """Your Python model must use the same class name. Every Python model
     that is created must have "TritonPythonModel" as the class name.
     """
+
     def initialize(self, args):
         """`initialize` is called only once when the model is being loaded.
         Implementing `initialize` function is optional. This function allows
@@ -50,15 +53,15 @@ class TritonPythonModel:
         # get max batch size
         max_batch_size = max(model_config["max_batch_size"], 1)
         # get blank symbol from config
-        blank = model_config.get("blank_id",  "-")
+        blank = model_config.get("blank_id", "-")
         # initialize decoders
         self.decoders = [Decoder(blank) for _ in range(max_batch_size)]
         # Get OUTPUT0 configuration
-        output0_config = pb_utils.get_output_config_by_name(
-            model_config, "0UTPUT0"
-        )
+        output0_config = pb_utils.get_output_config_by_name(model_config, "0UTPUT0")
         # Convert Triton types to numpy types
-        self.output0_dtype = pb_utils.triton_string_to_numpy(output0_config['data_type'])
+        self.output0_dtype = pb_utils.triton_string_to_numpy(
+            output0_config["data_type"]
+        )
         self.model_config = model_config
 
     def execute(self, requests):
@@ -81,14 +84,14 @@ class TritonPythonModel:
           be the same as `requests`
         """
         responses = []
-        batch_input  = []
-        batch_ready =[]
-        batch_start =[]
+        batch_input = []
+        batch_ready = []
+        batch_start = []
         batch_corrid = []
         # Every Python backend must iterate over everyone of the requests and create a pb utils.InferenceResponse for each of them.
         for request in requests:
             in_0 = pb_utils.get_input_tensor_by_name(request, "INPUT0")
-            #in 0 -> ctriton python backend utils.Tensor object
+            # in 0 -> ctriton python backend utils.Tensor object
             # in0-> ndarray[ xxx']
             batch_input += in_0.as_numpy().tolist()
 
@@ -119,18 +122,14 @@ class TritonPythonModel:
 
         with ThreadPool() as p:
             responses = p.map(self.process_single_request, args)
-        
+
         return responses
 
     def process_single_request(self, inp):
         decoder_idx, input, ready, start = inp
         response = self.decoders[decoder_idx].decode(input[0], start[0], ready[0])
-        out_tensor_0 = pb_utils.Tensor(
-            "OUTPUT0", response.astype(self.output0_dtype)
-        )
-        inference_response = pb_utils.InferenceResponse(
-            output_tensors = [out_tensor_0]
-        )
+        out_tensor_0 = pb_utils.Tensor("OUTPUT0", response.astype(self.output0_dtype))
+        inference_response = pb_utils.InferenceResponse(output_tensors=[out_tensor_0])
         return inference_response
 
     def finalize(self):

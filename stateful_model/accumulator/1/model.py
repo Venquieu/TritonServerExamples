@@ -12,7 +12,7 @@ class Accumulator(object):
     def update(self, input: tuple(str, int), start, ready):
         if start:
             self.sum = 0
-        
+
         if ready:
             if input[0] == "+":
                 self.sum += input[1]
@@ -28,6 +28,7 @@ class TritonPythonModel:
     """Your Python model must use the same class name. Every Python model
     that is created must have "TritonPythonModel" as the class name.
     """
+
     def initialize(self, args):
         """`initialize` is called only once when the model is being loaded.
         Implementing `initialize` function is optional. This function allows
@@ -52,11 +53,11 @@ class TritonPythonModel:
         # initialize accumulators
         self.accumulators = [Accumulator() for _ in range(max_batch_size)]
         # Get OUTPUT0 configuration
-        output0_config = pb_utils.get_output_config_by_name(
-            model_config, "0UTPUT0"
-        )
+        output0_config = pb_utils.get_output_config_by_name(model_config, "0UTPUT0")
         # Convert Triton types to numpy types
-        self.output0_dtype = pb_utils.triton_string_to_numpy(output0_config['data_type'])
+        self.output0_dtype = pb_utils.triton_string_to_numpy(
+            output0_config["data_type"]
+        )
         self.model_config = model_config
 
     def execute(self, requests):
@@ -80,8 +81,8 @@ class TritonPythonModel:
         """
         responses = []
         batch_inputs = []
-        batch_ready =[]
-        batch_start =[]
+        batch_ready = []
+        batch_start = []
         batch_corrid = []
         # Every Python backend must iterate over everyone of the requests and create a pb utils.InferenceResponse for each of them.
         for request in requests:
@@ -117,18 +118,14 @@ class TritonPythonModel:
 
         with ThreadPool() as p:
             responses = p.map(self.process_single_request, args)
-        
+
         return responses
 
     def process_single_request(self, inp):
         batch_idx, input, ready, start = inp
         response = self.accumulators[batch_idx].update(input[0], start[0], ready[0])
-        out_tensor_0 = pb_utils.Tensor(
-            "OUTPUT0", response.astype(self.output0_dtype)
-        )
-        inference_response = pb_utils.InferenceResponse(
-            output_tensors = [out_tensor_0]
-        )
+        out_tensor_0 = pb_utils.Tensor("OUTPUT0", response.astype(self.output0_dtype))
+        inference_response = pb_utils.InferenceResponse(output_tensors=[out_tensor_0])
         return inference_response
 
     def finalize(self):
